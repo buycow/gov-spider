@@ -11,12 +11,13 @@ body {
 h2 {
     margin-bottom: 20px;
 }
-input {
-    margin-bottom: 20px;
+label {
+    font-weight: bold;
 }
 table {
     border-collapse: collapse;
     width: 100%;
+    margin-top: 20px;
 }
 th, td {
     border: 1px solid #ccc;
@@ -29,9 +30,12 @@ tr:hover {
     background: #f0f8ff;
 }
 
-/* ✅ 超过 10 天未更新 */
-.warning-row {
-    background-color: #ffcccc !important; /* 浅红色 */
+/* 预警样式 */
+.warning {
+    background-color: #ffcccc !important; /* 浅红 */
+}
+.danger {
+    background-color: #ff8888 !important; /* 深红 */
 }
 </style>
 </head>
@@ -39,7 +43,9 @@ tr:hover {
 
 <h2>政府信息公开动态栏目更新情况</h2>
 
-<input type="file" accept=".json" onchange="loadJSON(event)">
+<label>选择日期：</label>
+<input type="date" id="datePicker" value="2026-05-25">
+<button onclick="loadData()">查看</button>
 
 <table>
     <thead>
@@ -54,42 +60,51 @@ tr:hover {
 </table>
 
 <script>
-function loadJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+function loadData() {
+    const date = document.getElementById("datePicker").value.replace(/-/g, "");
+    const fileName = `政府信息公开动态栏目更新情况${date}.json`;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const text = e.target.result;
-        const lines = text.trim().split("\n");
-        const data = lines.map(l => JSON.parse(l));
+    fetch(fileName)
+        .then(res => {
+            if (!res.ok) throw new Error("文件不存在");
+            return res.text();
+        })
+        .then(text => {
+            const lines = text.trim().split("\n");
+            const data = lines.map(l => JSON.parse(l));
 
-        // ✅ 按未更新天数降序排序
-        data.sort((a, b) => b.未更新天数 - a.未更新天数);
+            // 按未更新天数降序排序
+            data.sort((a, b) => b.未更新天数 - a.未更新天数);
 
-        const tbody = document.getElementById("tbody");
-        tbody.innerHTML = "";
+            const tbody = document.getElementById("tbody");
+            tbody.innerHTML = "";
 
-        data.forEach(item => {
-            const tr = document.createElement("tr");
+            data.forEach(item => {
+                const tr = document.createElement("tr");
 
-            // ✅ 超过 10 天 → 整行标浅红
-            if (item.未更新天数 > 10) {
-                tr.classList.add("warning-row");
-            }
+                if (item.未更新天数 >= 30) {
+                    tr.className = "danger";
+                } else if (item.未更新天数 >= 11) {
+                    tr.className = "warning";
+                }
 
-            tr.innerHTML = `
-                <td>${item.单位}</td>
-                <td>${item.最新稿件}</td>
-                <td>${item.发布日期}</td>
-                <td>${item.未更新天数}</td>
-            `;
-            tbody.appendChild(tr);
+                tr.innerHTML = `
+                    <td>${item.单位}</td>
+                    <td>${item.最新稿件}</td>
+                    <td>${item.发布日期}</td>
+                    <td>${item.未更新天数}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            document.getElementById("tbody").innerHTML =
+                `<tr><td colspan="4" style="color:red;">未找到数据：${fileName}</td></tr>`;
         });
-    };
-
-    reader.readAsText(file);
 }
+
+// 页面加载默认显示最新一天
+window.onload = loadData;
 </script>
 
 </body>
