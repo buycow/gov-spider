@@ -171,6 +171,7 @@ function initDatePicker() {
     if (allData[key]) {
       currentDate = key;
       renderTable(allData[key]);
+      updateStats(allData[key]);
     } else {
       document.getElementById('tableBody').innerHTML =
         '<tr><td colspan="7" class="no-data">该日期暂无数据</td></tr>';
@@ -180,6 +181,7 @@ function initDatePicker() {
 
   // 初始渲染
   renderTable(allData[defaultDate]);
+  updateStats(allData[defaultDate]);
 }
 
 function formatDateForInput(str) {
@@ -221,8 +223,6 @@ function renderTable(data) {
     </tr>`;
   });
   tbody.innerHTML = html;
-
-  updateStats(data);
 }
 
 function updateStats(data) {
@@ -251,6 +251,7 @@ function esc(str) {
 document.getElementById('searchInput').addEventListener('input', () => {
   if (currentDate && allData[currentDate]) {
     renderTable(allData[currentDate]);
+    updateStats(allData[currentDate]);
   }
 });
 </script>
