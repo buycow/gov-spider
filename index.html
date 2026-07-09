@@ -155,22 +155,27 @@ function initDatePicker() {
   const dates = Object.keys(allData).sort();
   if (dates.length === 0) return;
 
-  // 优先选当天，没有则选最新日期
+  // 默认选当天，若当天无数据则选最新一天
   const now = new Date();
   const today =
     now.getFullYear() +
     String(now.getMonth() + 1).padStart(2, '0') +
     String(now.getDate()).padStart(2, '0');
-  const defaultDate = dates.includes(today) ? today : dates[dates.length - 1];
+
+  const defaultDate = dates.includes(today)
+    ? today
+    : dates[dates.length - 1];
+
   currentDate = defaultDate;
   picker.value = formatDateForInput(defaultDate);
 
   picker.addEventListener('change', () => {
-    const val = picker.value; // "2026-07-08"
-    const key = val.replace(/-/g, ''); // "20260708"
+    const val = picker.value;
+    const key = val.replace(/-/g, '');
     if (allData[key]) {
       currentDate = key;
       renderTable(allData[key]);
+      updateStats(allData[key]); // ✅ 关键修复：切换日期时同步更新统计
     } else {
       document.getElementById('tableBody').innerHTML =
         '<tr><td colspan="7" class="no-data">该日期暂无数据</td></tr>';
@@ -180,10 +185,10 @@ function initDatePicker() {
 
   // 初始渲染
   renderTable(allData[defaultDate]);
+  updateStats(allData[defaultDate]);
 }
 
 function formatDateForInput(str) {
-  // "20260708" -> "2026-07-08"
   return str.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
 }
 
@@ -221,38 +226,9 @@ function renderTable(data) {
     </tr>`;
   });
   tbody.innerHTML = html;
-
-  updateStats(data);
 }
 
 function updateStats(data) {
   const total = data.length;
   const updated = data.filter(i => i['未更新天数'] === 0).length;
-  const week = data.filter(i => i['未更新天数'] > 0 && i['未更新天数'] <= 7).length;
-  const overdue = data.filter(i => i['未更新天数'] > 7).length;
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statUpdated').textContent = updated;
-  document.getElementById('statWeek').textContent = week;
-  document.getElementById('statOverdue').textContent = overdue;
-}
-
-function resetStats() {
-  ['statTotal','statUpdated','statWeek','statOverdue'].forEach(id => {
-    document.getElementById(id).textContent = '0';
-  });
-}
-
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// 搜索
-document.getElementById('searchInput').addEventListener('input', () => {
-  if (currentDate && allData[currentDate]) {
-    renderTable(allData[currentDate]);
-  }
-});
-</script>
-</body>
-</html>
+  const week = data.filter(i => i['未更新天数'] > 0 && i['未更新天数'] <= 7).
