@@ -1,111 +1,528 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>政府信息公开动态栏目更新情况</title>
-<style>
-body {
-    font-family: "Microsoft YaHei", sans-serif;
-    padding: 30px;
-}
-h2 {
-    margin-bottom: 20px;
-}
-label {
-    font-weight: bold;
-}
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 20px;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-}
-th {
-    background: #f5f5f5;
-}
-tr:hover {
-    background: #f0f8ff;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政府信息公开动态栏目更新情况</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* 预警样式 */
-.warning {
-    background-color: #ffcccc !important; /* 浅红 */
-}
-.danger {
-    background-color: #ff8888 !important; /* 深红 */
-}
-</style>
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #e8f0fe 0%, #f5f7fa 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #1a3c6e;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* 日期选择器 */
+        .date-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .date-btn {
+            padding: 10px 28px;
+            border: 2px solid #4a90d9;
+            background: #fff;
+            color: #4a90d9;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .date-btn:hover {
+            background: #eaf2fd;
+        }
+
+        .date-btn.active {
+            background: #4a90d9;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.35);
+        }
+
+        /* 统计信息 */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .stat-item .label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a3c6e;
+        }
+
+        .stat-item .value.warning {
+            color: #e8913a;
+        }
+
+        .stat-item .value.danger {
+            color: #e05555;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 400px;
+            max-width: 90%;
+            padding: 10px 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+
+        /* 表格容器 */
+        .table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        thead th {
+            background: #1a3c6e;
+            color: #fff;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        tbody tr:hover {
+            background: #f0f6ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafbfd;
+        }
+
+        tbody tr:nth-child(even):hover {
+            background: #f0f6ff;
+        }
+
+        /* 单位名称左对齐 */
+        tbody td.unit-name {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        /* 稿件标题左对齐 */
+        tbody td.article-title {
+            text-align: left;
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 查看链接 */
+        .view-link {
+            color: #4a90d9;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 4px 14px;
+            border: 1px solid #4a90d9;
+            border-radius: 5px;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .view-link:hover {
+            background: #4a90d9;
+            color: #fff;
+        }
+
+        /* 未更新天数标签 */
+        .days-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .days-tag.fresh {
+            background: #e6f7ee;
+            color: #27ae60;
+        }
+
+        .days-tag.normal {
+            background: #fff3e0;
+            color: #e8913a;
+        }
+
+        .days-tag.old {
+            background: #fde8e8;
+            color: #e05555;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #4a90d9;
+            font-size: 16px;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #4a90d9;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 20px; }
+            .date-btn { padding: 8px 18px; font-size: 13px; }
+            .stats-bar { gap: 10px; }
+            .stat-item { padding: 8px 16px; min-width: 100px; }
+            .stat-item .value { font-size: 20px; }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>📢 政府信息公开动态栏目更新情况</h1>
+            <p>数据来源：政府信息公开动态栏目监测 · 自动更新</p>
+        </div>
 
-<h2>政府信息公开动态栏目更新情况</h2>
+        <!-- 日期选择按钮 -->
+        <div class="date-selector" id="dateSelector">
+            <!-- 由 JS 动态生成 -->
+        </div>
 
-<label>监测日期：</label>
-<input type="date" id="datePicker" value="2026-05-25">
-<button onclick="loadData()">查看</button>
+        <!-- 统计信息 -->
+        <div class="stats-bar" id="statsBar">
+            <!-- 由 JS 动态生成 -->
+        </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>单位</th>
-            <th>最新稿件</th>
-            <th>发布日期</th>
-            <th>未更新天数</th>
-        </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-</table>
+        <!-- 搜索框 -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 搜索单位名称或稿件标题..." />
+        </div>
 
-<script>
-function loadData() {
-    const date = document.getElementById("datePicker").value.replace(/-/g, "");
-    const fileName = `政府信息公开动态栏目更新情况${date}.json`;
+        <!-- 数据表格 -->
+        <div class="table-wrapper">
+            <div class="loading" id="loading">正在加载数据...</div>
+            <div class="table-scroll" id="tableContainer" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th style="width:180px;">单位名称</th>
+                            <th style="min-width:300px;">最新稿件</th>
+                            <th style="width:120px;">发布时间</th>
+                            <th style="width:100px;">监测时间</th>
+                            <th style="width:110px;">未更新天数</th>
+                            <th style="width:80px;">栏目链接</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="icon">📭</div>
+                <p>没有找到匹配的数据</p>
+            </div>
+        </div>
 
-    fetch(fileName)
-        .then(res => {
-            if (!res.ok) throw new Error("文件不存在");
-            return res.text();
-        })
-        .then(text => {
-            const lines = text.trim().split("\n");
-            const data = lines.map(l => JSON.parse(l));
+        <div class="footer">
+            <p>本页面数据自动读取 JSON 文件，新增日期数据后刷新即可查看</p>
+        </div>
+    </div>
 
-            // 按未更新天数降序排序
-            data.sort((a, b) => b.未更新天数 - a.未更新天数);
+    <script>
+        // ========== 配置 ==========
+        // JSON 文件路径（与 index.html 同目录）
+        const JSON_FILE = '政府信息公开动态栏目更新情况.json';
 
-            const tbody = document.getElementById("tbody");
-            tbody.innerHTML = "";
+        // ========== 全局变量 ==========
+        let allData = {};       // 全部数据 { "20260708": [...], "20260709": [...] }
+        let dates = [];         // 所有可用日期（排序后）
+        let currentDate = '';   // 当前选中的日期
+        let currentData = [];   // 当前显示的数据（筛选后）
 
-            data.forEach(item => {
-                const tr = document.createElement("tr");
+        // ========== 初始化 ==========
+        async function init() {
+            try {
+                const response = await fetch(JSON_FILE);
+                if (!response.ok) {
+                    throw new Error('无法加载数据文件');
+                }
+                allData = await response.json();
 
-                if (item.未更新天数 >= 30) {
-                    tr.className = "danger";
-                } else if (item.未更新天数 >= 11) {
-                    tr.className = "warning";
+                // 提取并排序日期（新的在前）
+                dates = Object.keys(allData).sort((a, b) => b.localeCompare(a));
+
+                if (dates.length === 0) {
+                    showEmpty('暂无数据');
+                    return;
                 }
 
-                tr.innerHTML = `
-                    <td>${item.单位}</td>
-                    <td>${item.最新稿件}</td>
-                    <td>${item.发布日期}</td>
-                    <td>${item.未更新天数}</td>
-                `;
-                tbody.appendChild(tr);
+                // 生成日期选择按钮
+                renderDateButtons();
+
+                // 默认选中最新日期
+                selectDate(dates[0]);
+
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.getElementById('loading').innerHTML = 
+                    '<div class="empty-state"><div class="icon">⚠️</div><p>数据加载失败，请确认 JSON 文件是否存在</p></div>';
+            }
+        }
+
+        // ========== 渲染日期按钮 ==========
+        function renderDateButtons() {
+            const container = document.getElementById('dateSelector');
+            container.innerHTML = '';
+
+            dates.forEach(date => {
+                const btn = document.createElement('button');
+                btn.className = 'date-btn';
+                // 格式化显示：20260708 → 2026/07/08
+                btn.textContent = formatDate(date);
+                btn.dataset.date = date;
+                btn.addEventListener('click', () => selectDate(date));
+                container.appendChild(btn);
             });
-        })
-        .catch(err => {
-            document.getElementById("tbody").innerHTML =
-                `<tr><td colspan="4" style="color:red;">未找到数据：${fileName}</td></tr>`;
+        }
+
+        // ========== 选中日期 ==========
+        function selectDate(date) {
+            currentDate = date;
+
+            // 更新按钮状态
+            document.querySelectorAll('.date-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.date === date);
+            });
+
+            // 获取该日期的数据
+            currentData = allData[date] || [];
+
+            // 渲染统计
+            renderStats();
+
+            // 渲染表格
+            renderTable(currentData);
+
+            // 重置搜索
+            document.getElementById('searchInput').value = '';
+        }
+
+        // ========== 渲染统计栏 ==========
+        function renderStats() {
+            const data = allData[currentDate] || [];
+            const total = data.length;
+            const updatedToday = data.filter(d => d['未更新天数'] === 0).length;
+            const warning = data.filter(d => d['未更新天数'] > 0 && d['未更新天数'] <= 7).length;
+            const overdue = data.filter(d => d['未更新天数'] > 7).length;
+
+            const container = document.getElementById('statsBar');
+            container.innerHTML = `
+                <div class="stat-item">
+                    <div class="label">监测单位数</div>
+                    <div class="value">${total}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">今日已更新</div>
+                    <div class="value" style="color:#27ae60;">${updatedToday}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">一周内未更新</div>
+                    <div class="value ${warning > 0 ? 'warning' : ''}">${warning}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">超7天未更新</div>
+                    <div class="value ${overdue > 0 ? 'danger' : ''}">${overdue}</div>
+                </div>
+            `;
+        }
+
+        // ========== 渲染表格 ==========
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const tableContainer = document.getElementById('tableContainer');
+            const emptyState = document.getElementById('emptyState');
+            const loading = document.getElementById('loading');
+
+            loading.style.display = 'none';
+
+            if (data.length === 0) {
+                tableContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = data.map((item, index) => {
+                const days = item['未更新天数'];
+                let tagClass = 'fresh';
+                if (days > 7) tagClass = 'old';
+                else if (days > 0) tagClass = 'normal';
+
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td class="unit-name">${escapeHtml(item['单位名称'])}</td>
+                        <td class="article-title" title="${escapeHtml(item['最新稿件'])}">${escapeHtml(item['最新稿件'])}</td>
+                        <td>${item['发布时间'] || '--'}</td>
+                        <td>${item['监测时间'] || '--'}</td>
+                        <td><span class="days-tag ${tagClass}">${days} 天</span></td>
+                        <td><a href="${escapeHtml(item['栏目链接'])}" target="_blank" rel="noopener noreferrer" class="view-link">查看</a></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ========== 搜索功能 ==========
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.trim().toLowerCase();
+
+            if (!keyword) {
+                renderTable(currentData);
+                return;
+            }
+
+            const filtered = currentData.filter(item => 
+                (item['单位名称'] && item['单位名称'].toLowerCase().includes(keyword)) ||
+                (item['最新稿件'] && item['最新稿件'].toLowerCase().includes(keyword))
+            );
+
+            renderTable(filtered);
         });
-}
 
-// 页面加载默认显示最新一天
-window.onload = loadData;
-</script>
+        // ========== 工具函数 ==========
+        function formatDate(dateStr) {
+            // "20260708" → "2026/07/08"
+            if (dateStr.length === 8) {
+                return `${dateStr.substring(0,4)}/${dateStr.substring(4,6)}/${dateStr.substring(6,8)}`;
+            }
+            return dateStr;
+        }
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========== 启动 ==========
+        init();
+    </script>
 </body>
 </html>
